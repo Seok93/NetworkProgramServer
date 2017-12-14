@@ -1,4 +1,3 @@
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataInputStream;
@@ -8,6 +7,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -29,12 +30,14 @@ public class NetGameServer extends JFrame {
 	private ServerSocket socket; // 서버소켓
 	private Socket soc; // 연결소켓
 	private int Port; // 포트번호
-	private Vector vc = new Vector(); // 연결된 사용자를 저장할 벡터, 가변길이 배열
-	
-	//ID, PASS 관리용 배열
-	private final String ID[] = {"Guest1", "Guest2", "Guest3" };
-	private final String PSWD[] = {"1111", "2222", "3333"};
 
+	// 관리용 변수들
+	private Vector vc = new Vector(); // 연결된 사용자를 저장할 벡터, 가변길이 배열
+	//private final List<GameInfo> gameRoom = new ArrayList<GameInfo>(); //게임방 관리를 위한 변수
+	private final String ID[] = { "Guest1", "Guest2", "Guest3" };
+	private final String PSWD[] = { "1111", "2222", "3333" };
+
+	
 	public static void main(String[] args) {
 		NetGameServer frame = new NetGameServer(); // 프레임 객체 생성
 		frame.setVisible(true);
@@ -208,9 +211,9 @@ public class NetGameServer extends JFrame {
 		// 유저가 보낸 메시지 감독용 메소드, 사용자가 보낸 메세지 검사는 여기!
 		public void InMessage(String str) {
 			textArea.append("사용자로부터 들어온 메세지 : " + str + "\n");
-			//textArea.append(str + "\n");
+			// textArea.append(str + "\n");
 			textArea.setCaretPosition(textArea.getText().length());
-			
+
 			// 사용자 메세지 처리
 			if (str.charAt(0) == '/') {
 				int count = 0;
@@ -223,19 +226,21 @@ public class NetGameServer extends JFrame {
 				}
 
 				if (strArr[0].equals("confirmID")) {
-					//textArea.append("아이디 검사중");
-					//textArea.setCaretPosition(textArea.getText().length());
-					//textArea.append(Boolean.toString(confirmUser(strArr[1], strArr[2])));
-					//textArea.setCaretPosition(textArea.getText().length());
+					// textArea.append("아이디 검사중");
+					// textArea.setCaretPosition(textArea.getText().length());
+					// textArea.append(Boolean.toString(confirmUser(strArr[1], strArr[2])));
+					// textArea.setCaretPosition(textArea.getText().length());
+
+					if (strArr.length == 3) {
+						if (confirmUser(strArr[1], strArr[2]))
+							send_Message("true");
+						else
+							send_Message("false");
+					}
+				} else if (strArr[0].equals("makeGame")) {
 					
-					if(confirmUser(strArr[1], strArr[2])) 
-						send_Message("true");
-					else 
-						send_Message("false");
-				} else if(strArr[0].equals("confirmID")) {
-					
-				}else {
-				
+				} else {
+
 					broad_cast(str); // 모든 사용자에게 전송
 				}
 			} else {
@@ -266,12 +271,12 @@ public class NetGameServer extends JFrame {
 
 		// 입력받은 아이디, 비번 확인 메소드
 		public Boolean confirmUser(String id, String pswd) {
-			for(int i =0; i<ID.length; i++) {
-				if(ID[i].equals(id) && PSWD[i].equals(pswd)) {
+			for (int i = 0; i < ID.length; i++) {
+				if (ID[i].equals(id) && PSWD[i].equals(pswd)) {
 					return true;
 				}
 			}
-			
+
 			return false;
 		}
 
@@ -297,7 +302,7 @@ public class NetGameServer extends JFrame {
 						textArea.append(vc.size() + " : 현재 벡터에 담겨진 사용자 수\n");
 						textArea.append("사용자 접속 끊어짐 자원 반납\n");
 						textArea.setCaretPosition(textArea.getText().length());
-						
+
 						break;
 					} catch (Exception ee) {
 
@@ -308,6 +313,6 @@ public class NetGameServer extends JFrame {
 	} // 내부 userinfo클래스끝
 }
 
-//17-12-08 이후 추가할 할목
-//로그인시 아이디 사용중으로 바꾸기, 누가 또 접속하면 안되니까. 
+// 17-12-08 이후 추가할 할목
+// 로그인시 아이디 사용중으로 바꾸기, 누가 또 접속하면 안되니까.
 // 로그아웃이 아이디 사용중 해제, 클라이언트에 등록된 id도 삭제
